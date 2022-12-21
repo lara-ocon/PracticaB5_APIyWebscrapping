@@ -115,6 +115,8 @@ def crear_pdf(lakers_df, lakers_players_df):
     # ahora creamos el pdf, primero mostramos la tabla de los lakers
     # y en otra pagina la tabla con los jugadores
     pdf = fpdf.FPDF()
+
+    # Pagina 1 ======================================================#
     pdf.add_page()
     pdf.set_font('Arial', 'B', 20) # fuente, negrita, tamaño
     pdf.cell(40, 10, 'Los Angeles Lakers') # ancho, alto, texto
@@ -151,6 +153,8 @@ def crear_pdf(lakers_df, lakers_players_df):
     pdf.image('images/lakers_logo.png', 150, 10, 50, 30) # imagen, x, y, ancho, alto
 
 
+    # Pagina 2 ======================================================#
+
     # ahora saltamos de pagina para hablar acerca de los jugadores
     pdf.add_page()
     pdf.set_font('Arial', 'B', 20) # fuente, negrita, tamaño
@@ -159,6 +163,9 @@ def crear_pdf(lakers_df, lakers_players_df):
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(30, 10, 'Season 2022-2023 Players')
     pdf.ln(30) # salto de linea
+
+    # añadimos una imagen a la derecha y arriba (logo lakers)
+    pdf.image('images/lakers_logo.png', 150, 10, 50, 30) # imagen, x, y, ancho, alto
 
     # ahora creamos la tabla2 con el dataframe lakers_players_df,
     # primero ponemos la cabecera, todas las celdas estaran
@@ -185,14 +192,63 @@ def crear_pdf(lakers_df, lakers_players_df):
         for column in lakers_players_df.columns:
             pdf.cell(10, 7, str(lakers_players_df[column][player]), border=True, align='C')
         pdf.ln(7)
-
-
-    # añadimos una imagen a la derecha y arriba (logo lakers)
-    pdf.image('images/lakers_logo.png', 150, 10, 50, 30) # imagen, x, y, ancho, alto
-
-    # cargamos el pdf en un fichero
-    pdf.output('lakers.pdf', 'F')
     
+
+    # ahora hablamos de los lideres
+    # primero una celda con el lider en puntos
+    # pondremos Puntos en pequeño arriba a la izquierda
+    # debajo la foto del jugador, y a su derecha su nombre y sus puntos
+    pdf.ln(20)
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(15, 7, '')
+    pdf.cell(30, 10, 'Líderes')
+    pdf.ln(10)
+
+    tops = {'PTS': 'Puntos', 'REB': 'Rebotes', 'AST': 'Asistencias', 'STL': 'Robos', 'BLK': 'Bloqueos'}
+    bests = {}
+    for top, category in tops.items():
+        best_player = lakers_players_df[top].idxmax()
+        bests[category] = {"player" : best_player,
+                            "points" : str(lakers_players_df[top][best_player])
+                            }
+
+    # 1) Ponemos la letra en arial , negrita, tamaño 6, color = gris
+    pdf.set_font('Arial', 'B', 6)
+    pdf.set_text_color(128, 128, 128)
+
+    pdf.cell(15, 5, '')
+    for top in tops.values():
+        # ponemos la caracteristica del lider (puntos, rebotes...) y ponemos 
+        # linea de celda solo izquierda, arriba y a la dereca
+        pdf.cell(32, 5, top, border='LTR', align='L')
+    pdf.ln(5)
+
+    #2) Ponemos el nombre del jugador debajo de estas celdas y 
+    # centramos el texto a la izquierda
+    pdf.set_font('Arial', 'B', 6)
+    pdf.set_text_color(0, 0, 0)
+
+    pdf.cell(15, 5, '')
+    for top in tops.values():
+        pdf.cell(32, 5, bests[top]['player'], border='LR', align='R')
+    pdf.ln(5)
+
+    # 3) Añadimos los puntos en grande debajo de cada nombre de jugador
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(15, 5, '')
+    for top in tops.values():
+        pdf.cell(32, 5, bests[top]['points'], border='LRB', align='R')
+    pdf.ln(5)
+
+    # 4) Añadimos las imagenes de los jugadores en sus lugares correspondientes
+    pdf.cell(15, 5, '')
+    for player in bests.values():
+        pdf.image(f'images/{player["player"]}.png', pdf.get_x()+1, pdf.get_y()-11, 10, 10)
+        pdf.cell(32, 5, '')
+
+
+    # guardamos el pdf
+    pdf.output('lakers.pdf')
 
 
 team_season_stats, players = extract()
