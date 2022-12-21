@@ -116,11 +116,79 @@ def crear_pdf(lakers_df, lakers_players_df):
     # y en otra pagina la tabla con los jugadores
     pdf = fpdf.FPDF()
     pdf.add_page()
-    pdf.set_font('Arial', 'B', 16) # fuente, negrita, tamaño
+    pdf.set_font('Arial', 'B', 20) # fuente, negrita, tamaño
     pdf.cell(40, 10, 'Los Angeles Lakers') # ancho, alto, texto
-    pdf.set_font('Arial', 'B', 12)
-    pdf.cell(30, 10, 'Stats Season 2022-2023') 
     pdf.ln(10) # salto de linea
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(30, 10, 'Season 2022-2023') 
+    pdf.ln(30) # salto de linea
+
+    # ahora creamos la tabla1 con el dataframe lakers_df,
+    # primero ponemos la cabecera, todas las celdas estaran
+    # con su borde, y el fondo en naranja claro
+
+    pdf.set_font('Arial', 'B', 8)
+    pdf.set_fill_color(255, 184, 51) # naranja claro
+    # ahora creamos la cabecera y centramos el texto
+    # añadimos una celda vacia para que quede mas centrado
+    pdf.cell(15, 10, '')
+    pdf.cell(20, 10, 'Equipo', border=True, fill=True, align='C') # ancho, alto, texto
+    for column in lakers_df.columns:
+        pdf.cell(15, 10, column, border=True, fill=True, align='C')
+    pdf.ln(10)
+
+    # comenzamos a rellenar la tabla con los datos
+    # primero ponemos el nombre del equpo que será la unica celda que
+    # pondremos con fondo morado
+    pdf.set_fill_color(135, 24, 253) # morado
+    pdf.cell(15, 10, '')
+    pdf.cell(20, 10, 'Lakers', border=True, fill=True, align='C')
+
+    for column in lakers_df.columns:
+        pdf.cell(15, 10, str(lakers_df[column][0]), border=True, align='C')
+
+    # añadimos una imagen a la derecha y arriba (logo lakers)
+    pdf.image('images/lakers_logo.png', 150, 10, 50, 30) # imagen, x, y, ancho, alto
+
+
+    # ahora saltamos de pagina para hablar acerca de los jugadores
+    pdf.add_page()
+    pdf.set_font('Arial', 'B', 20) # fuente, negrita, tamaño
+    pdf.cell(40, 10, 'Los Angeles Lakers') # ancho, alto, texto
+    pdf.ln(10) # salto de linea
+    pdf.set_font('Arial', 'B', 12)
+    pdf.cell(30, 10, 'Season 2022-2023 Players')
+    pdf.ln(30) # salto de linea
+
+    # ahora creamos la tabla2 con el dataframe lakers_players_df,
+    # primero ponemos la cabecera, todas las celdas estaran
+    # con su borde, y el fondo en naranja claro
+
+    pdf.set_font('Arial', 'B', 7)
+    pdf.set_fill_color(255, 184, 51) # naranja claro
+    # ahora creamos la cabecera y centramos el texto
+    # añadimos una celda vacia para que quede mas centrado
+    pdf.cell(15, 7, '')
+    pdf.cell(30, 7, 'Jugador', border=True, fill=True, align='C') # ancho, alto, texto
+
+    print(list(lakers_players_df.columns))
+    print(list(lakers_players_df.index))
+
+    for column in list(lakers_players_df.columns):
+        pdf.cell(10, 7, column, border=True, fill=True, align='C')
+    pdf.ln(7)
+
+    pdf.set_fill_color(180, 110, 253) # morado
+    for player in lakers_players_df.index:
+        pdf.cell(15, 7, '')
+        pdf.cell(30, 7, player, border=True, align='C', fill=True)
+        for column in lakers_players_df.columns:
+            pdf.cell(10, 7, str(lakers_players_df[column][player]), border=True, align='C')
+        pdf.ln(7)
+
+
+    # añadimos una imagen a la derecha y arriba (logo lakers)
+    pdf.image('images/lakers_logo.png', 150, 10, 50, 30) # imagen, x, y, ancho, alto
 
     # cargamos el pdf en un fichero
     pdf.output('lakers.pdf', 'F')
