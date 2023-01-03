@@ -1,28 +1,33 @@
+"""
+Practica Bloque 5 - Parte 1 - ETL API
+En esta primera parte de la práctica, vamos a extraer datos de una API de la NBA, para así transformar los datos que nos interesan
+y más tarde cargar chicos datos en un pdf donde se ilustren las estadisticas del equipo y su informacion mas importante de forma visual.
 
-
-# Practica 5 - Parte 1
-# Exraer datos de una API:
-
+"""
 
 # cargamos las librerias necesarias
 import requests
 import json
 import pandas as pd
 from fpdf import FPDF
+import os
+import regex as re
 
 # extraccion de datos
 def extract():
 
-    # leemos la key que hemos guardado en un fichero json
-    key = json.load(open('fichero.json'))['cod']
+    # leemos la key que hemos guardado en un fichero txt
+    key = eval(open('config.txt', 'r').read())['hash']
 
     # cargamos las APIS que vamos a usar
     standings = requests.get(
         f'https://api.sportsdata.io/v3/nba/scores/json/Standings/2023?key={key}').json()
     players = requests.get(
         f'https://api.sportsdata.io/v3/nba/stats/json/PlayerSeasonStatsByTeam/2023/LAL?key={key}').json()
+    players_photos = requests.get(
+        f'https://api.sportsdata.io/v3/nba/scores/json/Players?key={key}').json()
 
-    return standings, players
+    return standings, players, players_photos
 
 # pasamos los datos a ficheros json para poder trabajar con ellos
 def load_to_json(data, filename):
@@ -111,7 +116,30 @@ def crear_df_players(players):
     return lakers_players_df
 
 
-def crear_pdf(lakers_df, lakers_players_df):
+def load_images(players_photos, players):
+    if not os.path.exists('player_images'):
+        os.mkdir('player_images')
+
+    # aqui cargamos las fotos de perfil de los 5 mejores jugadores en cada categoria para despues
+    # incluirlas en el pdf
+    for player in players:
+        found = False
+        for player_info in players_photos:
+            
+            if re.search(player['player'], player_info['DraftKingsName'], re.I):
+                found = True
+                # si encontramos el jugador en la lista de fotos, guardamos la imagen png en una carpeta
+                with open(f"player_images/{player['player']}.png", 'wb') as f:
+                    f.write(requests.get(player_info['PhotoUrl']).content)
+                break
+        if not found:
+            # si no encontramos la foto, ponemos una por defecto
+            with open(f"player_images/{player['player']}.png", 'wb') as f:
+                f.write(requests.get('https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/480px-No_image_available.svg.png').content)
+                
+
+
+def crear_pdf(lakers_df, lakers_players_df, players_photos):
     # ahora creamos el pdf, primero mostramos la tabla de los lakers
     # y en otra pagina la tabla con los jugadores
     pdf = FPDF()
@@ -240,10 +268,12 @@ def crear_pdf(lakers_df, lakers_players_df):
         pdf.cell(32, 5, bests[top]['points'], border='LRB', align='R')
     pdf.ln(5)
 
-    # 4) Añadimos las imagenes de los jugadores en sus lugares correspondientes
+    # 4) Añadimos las imagenes de los jugadores en sus lugares correspondientes, para ello accedemos 
+    # al df donde tenemos los perfiles de los juagdores y cogemos la url de la imagen
+    load_images(players_photos, bests.values()) # cargamos las fotos de perfil de los jugadores
     pdf.cell(15, 5, '')
     for player in bests.values():
-        pdf.image(f'images/{player["player"]}.png', pdf.get_x()+1, pdf.get_y()-11, 10, 10)
+        pdf.image(f'player_images/{player["player"]}.png', pdf.get_x()+1, pdf.get_y()-11, 10, 10)
         pdf.cell(32, 5, '')
 
 
@@ -251,9 +281,19 @@ def crear_pdf(lakers_df, lakers_players_df):
     pdf.output('lakers.pdf')
 
 
-team_season_stats, players = extract()
-load_to_json(team_season_stats, 'team_season_stats.json')
-load_to_json(players, 'players.json')
-lakers_df, lakers_players_df = transform(team_season_stats, players)
-crear_pdf(lakers_df, lakers_players_df)
+if __name__ == '__main__':
+
+    # Extraemos los datos de la API
+    team_season_stats, players, players_photos = extract()
+
+    # Cargamos los datos en un json para poder tenerlos en local
+    load_to_json(team_season_stats, 'team_season_stats.json')
+    load_to_json(players, 'players.json')
+    load_to_json(players_photos, 'players_photos.json')
+
+    # Transformamos los datos obteniendo la informacion que nos interesa
+    lakers_df, lakers_players_df = transform(team_season_stats, players)
+
+    # Cargamos los datos en un pdf
+    crear_pdf(lakers_df, lakers_players_df, players_photos)
 
