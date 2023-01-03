@@ -17,12 +17,13 @@ def signal_handler(sig, frame):
 
 
 # definimos la funcion para extraer los datos
-def extract(url):
-    page = requests.get(url).content
+def extract():
+    URL = 'https://www.sportytrader.es/cuotas/baloncesto/'
+    page = requests.get(URL).content
     return page
 
 
-def transform(page):
+def transform(page, team):
     # pasamos la pagina a un objeto BeautifulSoup
     soup = BeautifulSoup(page, 'html.parser')
 
@@ -40,7 +41,7 @@ def transform(page):
     partidos = {}
 
     for div in divs:
-        if re.search('Los Angeles Lakers', div.text): # otra forma es decir div.get('onclick')
+        if re.search(team, div.text, re.I): # otra forma es decir div.get('onclick')
             fecha = div.find('span', {'class': 'text-sm text-gray-600 w-full lg:w-1/2 text-center dark:text-white'}).text.strip('\n')
             equipos = div.find('a', {'class': ''}).text.strip('\n')
             cuotas = div.find_all('span', {'class': 'px-1 h-booklogosm font-bold bg-primary-yellow text-white leading-8 rounded-r-md w-14 md:w-18 flex justify-center items-center text-base'})
@@ -64,6 +65,7 @@ def load(partidos):
     NEGRITA_AZUL = '\033[1;34m'
     NEGRITA_AMARILLO = '\033[1;33m'
     NEGRITA_BLANCO = '\033[1;37m'
+    NEGRITA_ROJO  = '\033[1;31m'
     RESET = '\033[0m'
 
     print('\n')
@@ -72,41 +74,20 @@ def load(partidos):
         print(f"{NEGRITA_AZUL}     - {partidos[partido]['Equipo1']} -- Cuota: {partidos[partido]['Cuota1']} {RESET}")
         print(f"{NEGRITA_AZUL}     - {partidos[partido]['Equipo2']} -- Cuota: {partidos[partido]['Cuota2']} {RESET}")
         print(f"{NEGRITA_AMARILLO}     Favorito: {partidos[partido]['Favorito']} {RESET}\n")
-
-
-def load_in_xml(partidos):
-    # podemos cargar los datos tambien en un xml
-    root = ET.Element('Partidos', name='Partidos de la NBA de los Lakers')
-    for partido in partidos:
-        child = ET.SubElement(root, 'Partido', name=partido)
-        for key in partidos[partido]:
-            ET.SubElement(child, key).text = str(partidos[partido][key])
     
-    # creamos el arbol
-    tree = ET.ElementTree(root)
-
-    # guardamos el arbol con indentacion
-    with open('partidos.xml', 'w') as f:
-        f.write(prettify(root))
-    
-    # guardamos el arbol sin indentacion
-    tree.write('partidos_sin_indentacion.xml', encoding='utf-8', xml_declaration=True)
-
-    #tree.write('partidos.xml', encoding='utf-8', xml_declaration=True)
-
-
-def prettify(elem):
-    # Return a pretty-printed XML string for the Element.
-    rough_string = ET.tostring(elem)
-    reparsed = minidom.parseString(rough_string)
-    return reparsed.toprettyxml(indent="   ")
+    if partidos == {}:
+        print(f"{NEGRITA_ROJO}No se han encontrado partidos para el equipo {team} {RESET}\n")
 
 if __name__ == '__main__':
-    URL = 'https://www.sportytrader.es/cuotas/baloncesto/'
     signal.signal(signal.SIGINT, signal_handler)
 
-    page = extract(URL)
-    partidos = transform(page)
+    # extraemos los datos de la url sobre la que realizaremos el scraping
+    page = extract()
+
+    # Tranformamos los datos, accediendo a la informacion del equipo que nos introduzca el usuario
+    team = input('\033[1;37m'+'\nIntroduce el equipo que quieres buscar: '+'\033[0m').strip()
+    partidos = transform(page, team)
+
+    # Cargamos sus proximos partidos y la prediccion en base a las cuotas
     load(partidos)
-    load_in_xml(partidos)
 

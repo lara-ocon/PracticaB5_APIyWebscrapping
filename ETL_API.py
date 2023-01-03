@@ -13,6 +13,17 @@ from fpdf import FPDF
 import os
 import regex as re
 
+# guardamos los colores que vamos a usar al imprimir por pantalla el progreso de la ETL
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 # extraccion de datos
 def extract():
 
@@ -51,9 +62,6 @@ def transform(team_season_stats, players):
     # https://www.espn.com/nba/team/stats/_/name/lal/los-angeles-lakers
 
     lakers_players_df = crear_df_players(players)
-
-    print(lakers_df)
-    print(lakers_players_df)
 
     return lakers_df, lakers_players_df
 
@@ -116,6 +124,13 @@ def crear_df_players(players):
     return lakers_players_df
 
 
+def load_lakers_logo():
+    # cargamos la imagen del logo de los lakers
+    if not os.path.exists('lakers_logo.png'):
+        # si no existe la descargamos
+        with open('lakers_logo.png', 'wb') as f:
+            f.write(requests.get('https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Los_Angeles_Lakers_logo.svg/1200px-Los_Angeles_Lakers_logo.svg.png').content)
+
 def load_images(players_photos, players):
     if not os.path.exists('player_images'):
         os.mkdir('player_images')
@@ -125,7 +140,7 @@ def load_images(players_photos, players):
     for player in players:
         found = False
         for player_info in players_photos:
-            
+
             if re.search(player['player'], player_info['DraftKingsName'], re.I):
                 found = True
                 # si encontramos el jugador en la lista de fotos, guardamos la imagen png en una carpeta
@@ -178,7 +193,8 @@ def crear_pdf(lakers_df, lakers_players_df, players_photos):
         pdf.cell(15, 10, str(lakers_df[column][0]), border=True, align='C')
 
     # añadimos una imagen a la derecha y arriba (logo lakers)
-    pdf.image('images/lakers_logo.png', 150, 10, 50, 30) # imagen, x, y, ancho, alto
+    load_lakers_logo()
+    pdf.image('lakers_logo.png', 150, 10, 50, 30) # imagen, x, y, ancho, alto
 
 
     # Pagina 2 ======================================================#
@@ -193,7 +209,7 @@ def crear_pdf(lakers_df, lakers_players_df, players_photos):
     pdf.ln(30) # salto de linea
 
     # añadimos una imagen a la derecha y arriba (logo lakers)
-    pdf.image('images/lakers_logo.png', 150, 10, 50, 30) # imagen, x, y, ancho, alto
+    pdf.image('lakers_logo.png', 150, 10, 50, 30) # imagen, x, y, ancho, alto
 
     # ahora creamos la tabla2 con el dataframe lakers_players_df,
     # primero ponemos la cabecera, todas las celdas estaran
@@ -206,8 +222,6 @@ def crear_pdf(lakers_df, lakers_players_df, players_photos):
     pdf.cell(15, 7, '')
     pdf.cell(30, 7, 'Jugador', border=True, fill=True, align='C') # ancho, alto, texto
 
-    print(list(lakers_players_df.columns))
-    print(list(lakers_players_df.index))
 
     for column in list(lakers_players_df.columns):
         pdf.cell(10, 7, column, border=True, fill=True, align='C')
@@ -284,7 +298,11 @@ def crear_pdf(lakers_df, lakers_players_df, players_photos):
 if __name__ == '__main__':
 
     # Extraemos los datos de la API
+    # imprimimos en azul para que se vea que se esta ejecutando
+    print(bcolors.OKBLUE + '\nExtrayendo datos de la API...\n' + bcolors.ENDC)
     team_season_stats, players, players_photos = extract()
+    print(bcolors.OKGREEN + 'Datos extraidos correctamente\n' + bcolors.ENDC)
+    print('\n')
 
     # Cargamos los datos en un json para poder tenerlos en local
     load_to_json(team_season_stats, 'team_season_stats.json')
@@ -292,8 +310,13 @@ if __name__ == '__main__':
     load_to_json(players_photos, 'players_photos.json')
 
     # Transformamos los datos obteniendo la informacion que nos interesa
+    print(bcolors.OKBLUE + '\nTransformando datos...\n' + bcolors.ENDC)
     lakers_df, lakers_players_df = transform(team_season_stats, players)
+    print(bcolors.OKGREEN + 'Datos transformados correctamente\n' + bcolors.ENDC)
+    print('\n')
 
     # Cargamos los datos en un pdf
+    print(bcolors.OKBLUE + '\nCargando datos en un pdf...\n' + bcolors.ENDC)
     crear_pdf(lakers_df, lakers_players_df, players_photos)
+    print(bcolors.OKGREEN + 'Datos cargados correctamente en el pdf\n' + bcolors.ENDC)
 
