@@ -7,6 +7,8 @@ import requests
 import signal
 import sys
 import re
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
 # definimos la funcion para salir del programa
 def signal_handler(sig, frame):
@@ -45,6 +47,7 @@ def transform(page):
             cuota1, cuota2 = float(cuotas[0].text), float(cuotas[1].text)
             equipo1, equipo2 = equipos.split(' - ')
 
+
             if cuota1 < cuota2:
                 favorito = equipo1
             else:
@@ -53,7 +56,7 @@ def transform(page):
                                     'Equipo1': equipo1, 'Equipo2': equipo2, 
                                     'Cuota1': cuota1, 'Cuota2': cuota2, 
                                     'Favorito': favorito}
-    
+
     return partidos
 
 
@@ -70,6 +73,34 @@ def load(partidos):
         print(f"{NEGRITA_AZUL}     - {partidos[partido]['Equipo2']} -- Cuota: {partidos[partido]['Cuota2']} {RESET}")
         print(f"{NEGRITA_AMARILLO}     Favorito: {partidos[partido]['Favorito']} {RESET}\n")
 
+
+def load_in_xml(partidos):
+    # podemos cargar los datos tambien en un xml
+    root = ET.Element('Partidos', name='Partidos de la NBA de los Lakers')
+    for partido in partidos:
+        child = ET.SubElement(root, 'Partido', name=partido)
+        for key in partidos[partido]:
+            ET.SubElement(child, key).text = str(partidos[partido][key])
+    
+    # creamos el arbol
+    tree = ET.ElementTree(root)
+
+    # guardamos el arbol con indentacion
+    with open('partidos.xml', 'w') as f:
+        f.write(prettify(root))
+    
+    # guardamos el arbol sin indentacion
+    tree.write('partidos_sin_indentacion.xml', encoding='utf-8', xml_declaration=True)
+
+    #tree.write('partidos.xml', encoding='utf-8', xml_declaration=True)
+
+
+def prettify(elem):
+    # Return a pretty-printed XML string for the Element.
+    rough_string = ET.tostring(elem)
+    reparsed = minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="   ")
+
 if __name__ == '__main__':
     URL = 'https://www.sportytrader.es/cuotas/baloncesto/'
     signal.signal(signal.SIGINT, signal_handler)
@@ -77,4 +108,5 @@ if __name__ == '__main__':
     page = extract(URL)
     partidos = transform(page)
     load(partidos)
+    load_in_xml(partidos)
 

@@ -8,7 +8,7 @@
 import requests
 import json
 import pandas as pd
-import fpdf
+from fpdf import FPDF
 
 # extraccion de datos
 def extract():
@@ -114,7 +114,7 @@ def crear_df_players(players):
 def crear_pdf(lakers_df, lakers_players_df):
     # ahora creamos el pdf, primero mostramos la tabla de los lakers
     # y en otra pagina la tabla con los jugadores
-    pdf = fpdf.FPDF()
+    pdf = FPDF()
 
     # Pagina 1 ======================================================#
     pdf.add_page()

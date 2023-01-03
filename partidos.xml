@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<Partidos name="Partidos de la NBA de los Lakers">
+   <Partido name="Sacramento Kings - Los Angeles Lakers">
+      <fecha>22 dic. - 04:00</fecha>
+      <Equipo1>Sacramento Kings</Equipo1>
+      <Equipo2>Los Angeles Lakers</Equipo2>
+      <Cuota1>1.43</Cuota1>
+      <Cuota2>3.0</Cuota2>
+      <Favorito>Sacramento Kings</Favorito>
+   </Partido>
+   <Partido name="Dallas Mavericks - Los Angeles Lakers">
+      <fecha>25 dic. - 20:30</fecha>
+      <Equipo1>Dallas Mavericks</Equipo1>
+      <Equipo2>Los Angeles Lakers</Equipo2>
+      <Cuota1>1.5</Cuota1>
+      <Cuota2>2.4</Cuota2>
+      <Favorito>Dallas Mavericks</Favorito>
+   </Partido>
+</Partidos>
