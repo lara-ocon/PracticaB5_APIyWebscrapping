@@ -1,6 +1,6 @@
 # PracticaB5
 ## Practica Bloque 5: API y Webscrapping
-### Hecho por: Lara Ocón Madrid
+## Hecho por: Lara Ocón Madrid
 
 Esta práctica consiste en dos ETL que extraen informacion importante de un equipo de la NBA (en mi caso he decidido hacerlo de Los Angeles Lakers), analizan dicha informacion y la cargan o bien por pantalla o en formato pdf para visualizar las estadísticas más relevantes del equipo en la temporada 2022-2023.
 
