@@ -7,8 +7,6 @@ import requests
 import signal
 import sys
 import re
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
 
 # definimos la funcion para salir del programa
 def signal_handler(sig, frame):

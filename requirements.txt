@@ -1,3 +1,9 @@
 fpdf
-requests
 pandas
+bs4
+requests
+regex
+
+
+
+
