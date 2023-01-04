@@ -1,1 +1,1 @@
-sudo docker run -it pizza2b3 bash
+sudo docker run -it practica_bloque5 bash

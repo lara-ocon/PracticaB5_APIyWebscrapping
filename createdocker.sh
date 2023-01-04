@@ -1,1 +1,1 @@
-sudo docker build -t pizza2b3 .
+sudo docker build -t practica_bloque5 .
