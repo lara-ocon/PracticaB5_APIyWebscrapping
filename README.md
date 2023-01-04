@@ -19,7 +19,7 @@ Para ejecutar dicha ETL es necesario introducir el siguiente comando: 'python3 E
 Para ejecutar la segunda ETL es necesario introducir el siguiente comando: 'python3 ETL_Webscrapping.py'.
 
 
-1.- Ejecución directa
+2.- Ejecución directa
 ======================
 
 En caso de ejecución directa (no en docker)aAntes de hacer nada es necesario ejecutar el comando: 'pip install -r requirements.txt' para tener instaladas todas las librerías necesarias (en el caso de docker esto lo hace el propio script createdocker.sh en el contenedor).
