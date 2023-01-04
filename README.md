@@ -22,7 +22,7 @@ Para ejecutar la segunda ETL es necesario introducir el siguiente comando: 'pyth
 2.- Ejecución directa
 ======================
 
-En caso de ejecución directa (no en docker)aAntes de hacer nada es necesario ejecutar el comando: 'pip install -r requirements.txt' para tener instaladas todas las librerías necesarias (en el caso de docker esto lo hace el propio script createdocker.sh en el contenedor).
+En caso de ejecución directa (no en docker) antes de hacer nada es necesario ejecutar el comando: 'pip install -r requirements.txt' para tener instaladas todas las librerías necesarias (en el caso de docker esto lo hace el propio script createdocker.sh en el contenedor).
 
 De forma idéntica al caso de docker, a continuación se pueden ejecutar los programas:
 
